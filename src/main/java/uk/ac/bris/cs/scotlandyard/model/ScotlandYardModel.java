@@ -5,14 +5,37 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import uk.ac.bris.cs.gamekit.graph.Graph;
+
+import static java.util.Objects.requireNonNull;
+import static uk.ac.bris.cs.scotlandyard.model.Colour.BLACK;
 
 // TODO implement all methods and pass all tests
 public class ScotlandYardModel implements ScotlandYardGame {
 
+	List<Boolean> rounds;
+	Graph<Integer, Transport> graph;
+
+
 	public ScotlandYardModel(List<Boolean> rounds, Graph<Integer, Transport> graph,
 			PlayerConfiguration mrX, PlayerConfiguration firstDetective,
 			PlayerConfiguration... restOfTheDetectives) {
+
+		this.rounds = requireNonNull(rounds);
+		this.graph = requireNonNull(graph);
+
+		if (rounds.isEmpty()) {
+			throw new IllegalArgumentException("Empty rounds");
+		}
+
+		if (graph.isEmpty()) {
+			throw new IllegalArgumentException("Graph rounds");
+		}
+
+		if (mrX.colour != BLACK) { // or mr.colour.isDetective()
+			throw new IllegalArgumentException("MrX should be Black");
+		}
 		// TODO
 	}
 
