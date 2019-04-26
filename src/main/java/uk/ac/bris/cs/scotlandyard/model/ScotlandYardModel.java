@@ -1,6 +1,7 @@
 package uk.ac.bris.cs.scotlandyard.model;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 import ch.qos.logback.core.pattern.color.BlackCompositeConverter;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
@@ -9,9 +10,10 @@ import uk.ac.bris.cs.gamekit.graph.ImmutableGraph;
 
 import static java.util.Objects.requireNonNull;
 import static uk.ac.bris.cs.scotlandyard.model.Colour.BLACK;
+import static uk.ac.bris.cs.scotlandyard.model.Colour.BLUE;
 
 // TODO implement all methods and pass all tests
-public class ScotlandYardModel implements ScotlandYardGame {
+public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	List<Boolean> rounds;
 	Graph<Integer, Transport> graph;
@@ -80,6 +82,11 @@ public class ScotlandYardModel implements ScotlandYardGame {
 	}
 
 	@Override
+	public void accept(Move move) {
+		throw new RuntimeException("Implement me");
+	}
+
+	@Override
 	public void registerSpectator(Spectator spectator) {
 		// TODO
 		throw new RuntimeException("Implement me");
@@ -93,7 +100,23 @@ public class ScotlandYardModel implements ScotlandYardGame {
 
 	@Override
 	public void startRotate() {
+
+
+
+		Set<Move> mov = validMove(players.get(0));
+
+
+
+		players.get(0).player().makeMove(this , players.get(0).location(), mov, this);
+
+
+
+
 		// TODO
+		throw new RuntimeException("Implement me");
+	}
+
+	public Set<Move> validMove(ScotlandYardPlayer player){
 		throw new RuntimeException("Implement me");
 	}
 
@@ -164,5 +187,7 @@ public class ScotlandYardModel implements ScotlandYardGame {
 	public Graph<Integer, Transport> getGraph() {
 		return new ImmutableGraph<>(graph);
 	}
+
+
 
 }
