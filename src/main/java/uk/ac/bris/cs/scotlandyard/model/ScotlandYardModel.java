@@ -22,7 +22,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	private int rotation = 0;
 	private boolean isGameOver = false;
 	int mrXLastLocation = 0;
-	List<Spectator> spectators;
+	List<Spectator> spectators = new ArrayList<>();
 	List<ScotlandYardPlayer> detectives;
 
 
@@ -114,64 +114,87 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public void accept(Move move) {
-		if (move == null) {
-			throw new NullPointerException("Move cannot be null");
-		}
+		System.out.println("test ----" + move.toString());
+
+//		if (move == null) {
+//			throw new NullPointerException("Move cannot be null");
+//		}
+
 
 		ScotlandYardPlayer currentPlayer = players.get(currentPlayerIndex);
 
 
 		if (!(validMoves(currentPlayer).contains(move))){
+			System.out.println("test throws----" + move.toString());
 			throw new IllegalArgumentException("Move is not valid");
 		}
 
-		System.out.println("test ----" + move.toString());
 
 		currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
 
 		if(currentPlayer.colour() == BLACK){
-			acceptMrX(move);
+			System.out.println("test ---- MrX");
+			if(move.toString().substring(0,6).equals("Double")){
+				System.out.println("DOUBLE");
+				acceptDoubleMrX(move);
+				acceptDoubleMrX(((DoubleMove) move).firstMove());
+				acceptDoubleMrX(((DoubleMove) move).secondMove());
+			}else {
+				acceptMrX(move);
+			}
 		}else{
+			System.out.println("test ---- Detective");
 			acceptDetective(move);
 		}
 
 
+
+		System.out.println("test accept currIndex ----" + currentPlayerIndex);
+
+
 		if(currentPlayerIndex != 0){
 			doMove();
+		}else {
+			for(Spectator s : spectators){
+				s.onRotationComplete(this);
+			}
 		}
-
-
-
 
 	}
 
 	@Override
 	public void startRotate() {
-		currentPlayerIndex = 0;
+		//currentPlayerIndex = 0;
 		doMove();
-
 	}
 
 	public void doMove(){
+		System.out.println("test currIndex ----" + currentPlayerIndex);
 		ScotlandYardPlayer player = players.get(currentPlayerIndex);
 		player.player().makeMove(this, player.location(), validMoves(player), requireNonNull(this));
 	}
 
 	public void acceptMrX(Move move){
+		System.out.println("test currRound ----" + currentRound);
+		for(Spectator s : spectators){
+			s.onRoundStarted(this, currentRound);
+			s.onMoveMade(this, move);
+		}
 		currentRound += 1;
-//		for(Spectator s : spectators){
-//			s.onRoundStarted(this, currentRound);
-//			s.onMoveMade(this, move);
-//		}
+	}
 
+	public void acceptDoubleMrX(Move move){
+		for(Spectator s : spectators){
+			s.onMoveMade(this, move);
+		}
+		currentRound += 1;
 	}
 
 
 	public void acceptDetective(Move move){
-//		for(Spectator s : spectators){
-//			s.onMoveMade(this, move);
-//			s.onRotationComplete(this);
-//		}
+		for(Spectator s : spectators){
+			s.onMoveMade(this, move);
+		}
 	}
 
 	//return valid Moves Player can make
