@@ -24,7 +24,8 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	int mrXLastLocation = 0;
 	List<Spectator> spectators = new ArrayList<>();
 	List<ScotlandYardPlayer> nonmrxdetectives;
-	int showRounds[] = {3,8,13,18,24};
+	List<Integer> showRounds = new ArrayList<>();
+	{3,8,13,18,24};
 
 
 	public ScotlandYardModel(List<Boolean> rounds, Graph<Integer, Transport> graph,
@@ -34,7 +35,11 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		this.rounds = requireNonNull(rounds);
 		this.graph = requireNonNull(graph);
 		players = new ArrayList<>();
-
+		showRounds.add(3);
+		showRounds.add(8);
+		showRounds.add(13);
+		showRounds.add(18);
+		showRounds.add(24);
 
 		if (rounds.isEmpty()) {
 			throw new IllegalArgumentException("Empty rounds");
@@ -186,6 +191,8 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	public void acceptMrX(Move move){
 		System.out.println("test currRound ----" + currentRound);
+		if(showRounds.)
+
 		for(Spectator s : spectators){									  //All spectators will be notified of the round starting and onMoveMade will be called for each one
 			s.onRoundStarted(this, currentRound);
 			s.onMoveMade(this, move);
@@ -304,12 +311,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public Collection<Spectator> getSpectators() {
-//		List<Spectator> spectatorsCopy = new ArrayList<>();
-//		for(Spectator sp : spectators){
-//			spectatorsCopy.add(new );
-//		}
-
-		return spectators;
+		return Collections.unmodifiableList(spectators);
 	}
 
 	@Override
