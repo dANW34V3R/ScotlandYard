@@ -86,8 +86,8 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	}
 
 	@Override
-	public void registerSpectator(Spectator spectator) {
-		if (spectator == null) {
+	public void registerSpectator(Spectator spectator) {						//Adds specific spectator to the spectator set
+		if (spectator == null) {                                                //while checking that spectator is not null and is not currently contained within the set
 			throw new NullPointerException("Spectators reference is null therefore cannot be added");
 		}
 		else if (getSpectators().contains(spectator)) {
@@ -99,8 +99,8 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	}
 
 	@Override
-	public void unregisterSpectator(Spectator spectator) {
-		if (spectator == null) {
+	public void unregisterSpectator(Spectator spectator) {								//Removes specific spectator from the spectator set
+		if (spectator == null) {														//while checking that spectator is not null and is currently contained within the set
 			throw new NullPointerException("Spectators reference is null therefore cannot be removed");
 		}
 		else if (!getSpectators().contains(spectator)) {
@@ -126,25 +126,25 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 		if (!(validMoves(currentPlayer).contains(move))){
 			System.out.println("test throws----" + move.toString());
-			throw new IllegalArgumentException("Move is not valid");
+			throw new IllegalArgumentException("Move is not valid");       //Throws an exception if the move chosen is not part of the valid moves
 		}
 
 
-		currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+		currentPlayerIndex = (currentPlayerIndex + 1) % players.size();    //Increments the player index. Modulus allows counter to loop back to 0(Mr X) after all detectives have moved
 
 		if(currentPlayer.colour() == BLACK){
 			System.out.println("test ---- MrX");
-			if(move.toString().substring(0,6).equals("Double")){
+			if(move.toString().substring(0,6).equals("Double")){           //If a double move is chosen Mr X accepts his move in a different way (See acceptDoubleMrX)
 				System.out.println("DOUBLE");
 				acceptDoubleMrX(move);
 				acceptMrX(((DoubleMove) move).firstMove());
 				acceptMrX(((DoubleMove) move).secondMove());
 			}else {
-				acceptMrX(move);
+				acceptMrX(move);										   //Otherwise MrX accepts normally
 			}
 		}else{
 			System.out.println("test ---- Detective");
-			acceptDetective(move);
+			acceptDetective(move);										  //If the player is not Mr X they will accept the move as a detective
 		}
 
 
@@ -152,10 +152,10 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		System.out.println("test accept currIndex ----" + currentPlayerIndex);
 
 
-		if(currentPlayerIndex != 0){
+		if(currentPlayerIndex != 0){									  //If the current player is not the last detective, "doMove" is called on the next detective
 			doMove();
 		}else {
-			for(Spectator s : spectators){
+			for(Spectator s : spectators){								  //Otherwise all of the spectators are notified of the rotation being completed
 				s.onRotationComplete(this);
 			}
 		}
@@ -165,35 +165,35 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	@Override
 	public void startRotate() {
 		//currentPlayerIndex = 0;
-		doMove();
+		doMove();														  //This will call doMove for the first player which will always be mrX as currentPlayer index will be 0 at this point
 	}
 
 	public void doMove(){
 		System.out.println("test currIndex ----" + currentPlayerIndex);
 		ScotlandYardPlayer player = players.get(currentPlayerIndex);
-		player.player().makeMove(this, player.location(), validMoves(player), requireNonNull(this));
+		player.player().makeMove(this, player.location(), validMoves(player), requireNonNull(this));    //makeMove is called on the current player in the round. This will cause the accept callback to be called
 	}
 
 	public void acceptMrX(Move move){
 		System.out.println("test currRound ----" + currentRound);
-		for(Spectator s : spectators){
+		for(Spectator s : spectators){									  //All spectators will be notified of the round starting and onMoveMade will be called for each one
 			s.onRoundStarted(this, currentRound);
 			s.onMoveMade(this, move);
 		}
-		currentRound += 1;
+		currentRound += 1;												  //The currentRound variable is incremented to show that MrX had made a move
 	}
 
 	public void acceptDoubleMrX(Move move){
-		for(Spectator s : spectators){
+		for(Spectator s : spectators){									  //onRoundStarted does not need to be called at first when Mr X uses a double move
 			s.onMoveMade(this, move);
 		}
-		currentRound += 1;
+		currentRound += 1;												  //currentRound is again incremented to show that Mr X has moved
 	}
 
 
 	public void acceptDetective(Move move){
 		for(Spectator s : spectators){
-			s.onMoveMade(this, move);
+			s.onMoveMade(this, move);								  //onMoveMade is called for each spectator
 		}
 	}
 
