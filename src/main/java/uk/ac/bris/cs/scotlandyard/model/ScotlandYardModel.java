@@ -24,10 +24,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	int mrXLastLocation = 0;
 	List<Spectator> spectators = new ArrayList<>();
 	List<ScotlandYardPlayer> nonmrxdetectives;
-<<<<<<< HEAD
 	private boolean alldetectivesmoved = false;
-=======
->>>>>>> afc62b60a9faed624ecea2d538ceb07490b31ffd
 
 
 	public ScotlandYardModel(List<Boolean> rounds, Graph<Integer, Transport> graph,
@@ -179,10 +176,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		if(currentPlayerIndex != 0){									  //If the current player is not the last detective, "doMove" is called on the next detective
 			doMove();
 		}else {
-<<<<<<< HEAD
 			alldetectivesmoved = true;
-=======
->>>>>>> afc62b60a9faed624ecea2d538ceb07490b31ffd
 			if(!isGameOver()){
 				for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
 					s.onRotationComplete(this);
