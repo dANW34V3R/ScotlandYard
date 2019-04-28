@@ -23,7 +23,8 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	private boolean isGameOver = false;
 	int mrXLastLocation = 0;
 	List<Spectator> spectators = new ArrayList<>();
-	List<ScotlandYardPlayer> nomrxdetectives;
+	List<ScotlandYardPlayer> nonmrxdetectives;
+	int showRounds[] = {3,8,13,18,24};
 
 
 	public ScotlandYardModel(List<Boolean> rounds, Graph<Integer, Transport> graph,
@@ -78,9 +79,9 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 			players.add(new ScotlandYardPlayer(configuration.player, configuration.colour, configuration.location, configuration.tickets));
 
-			nomrxdetectives = new ArrayList<>();
+			nonmrxdetectives = new ArrayList<>();
 			for (ScotlandYardPlayer p : players) {
-				if (p.isDetective()) nomrxdetectives.add(p);
+				if (p.isDetective()) nonmrxdetectives.add(p);
 			}
 		}
 	}
@@ -123,6 +124,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 		ScotlandYardPlayer currentPlayer = players.get(currentPlayerIndex);
 
+		System.out.println("test startRoundLocation ---" + currentPlayer.location());
 
 		if (!(validMoves(currentPlayer).contains(move))){
 			System.out.println("test throws----" + move.toString());
@@ -132,32 +134,33 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 		currentPlayerIndex = (currentPlayerIndex + 1) % players.size();    //Increments the player index. Modulus allows counter to loop back to 0(Mr X) after all detectives have moved
 
-		if(currentPlayer.colour() == BLACK){							   //The move is accepted and the tickets are reduced
+		if(currentPlayer.colour() == BLACK){							   //The move is accepted, tickets are reduced, location updated
 			System.out.println("test ---- MrX");
 			if(move.toString().substring(0,6).equals("Double")){           //If a double move is chosen Mr X accepts his move in a different way (See acceptDoubleMrX)
 				System.out.println("DOUBLE");
-
-
-
 				acceptDoubleMrX(move);
 				acceptMrX(((DoubleMove) move).firstMove());
 				acceptMrX(((DoubleMove) move).secondMove());
 				currentPlayer.removeTicket(((DoubleMove) move).firstMove().ticket());
 				currentPlayer.removeTicket(((DoubleMove) move).secondMove().ticket());
+				currentPlayer.location(((DoubleMove) move).finalDestination());
 			}else {
 				acceptMrX(move);										   //Otherwise MrX accepts normally
-				currentPlayer.removeTicket(((TicketMove) move).ticket());
+				currentPlayer.removeTicket(((TicketMove)move).ticket());
+				currentPlayer.location(((TicketMove) move).destination());
 			}
 		}else{
 			System.out.println("test ---- Detective");
 			acceptDetective(move);										  //If the player is not Mr X they will accept the move as a detective
-			currentPlayer.removeTicket(((TicketMove) move).ticket());
+			currentPlayer.removeTicket(((TicketMove)move).ticket());
+			currentPlayer.location(((TicketMove) move).destination());
 		}
 
 
 
 		System.out.println("test accept currIndex ----" + currentPlayerIndex);
 
+		System.out.println("test endRoundLocation ---" + currentPlayer.location());
 
 		if(currentPlayerIndex != 0){									  //If the current player is not the last detective, "doMove" is called on the next detective
 			doMove();
@@ -323,15 +326,21 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		System.out.println("Enter get winning players ");
 		Set<Colour> winner = new HashSet<>();
 
+
 		if (noRoundsLeft() || detectivesCantMove()){
 			winner.add(BLACK);
 		}
 
 		if (mrXCantMove() || mrXCaptured()){
-			for(ScotlandYardPlayer x : detectives){
+			for(ScotlandYardPlayer x : nonmrxdetectives){
 				winner.add(x.colour());
 			}
 
+		}
+		System.out.println(winner.size());
+		for(Colour x : winner){
+			System.out.println("new");
+			System.out.println(x.toString());
 		}
 		return Collections.unmodifiableSet(winner);
 
@@ -402,6 +411,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 
 	private boolean mrXCaptured(){
+		ScotlandYardPlayer mrX = players.get(0);
+		for (ScotlandYardPlayer x : nonmrxdetectives){
+			if(x.location() == mrX.location()){
+				return true;
+			}
+		}
 		return false;
 	}
 
