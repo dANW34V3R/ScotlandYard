@@ -137,8 +137,8 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			if(move.toString().substring(0,6).equals("Double")){
 				System.out.println("DOUBLE");
 				acceptDoubleMrX(move);
-				acceptDoubleMrX(((DoubleMove) move).firstMove());
-				acceptDoubleMrX(((DoubleMove) move).secondMove());
+				acceptMrX(((DoubleMove) move).firstMove());
+				acceptMrX(((DoubleMove) move).secondMove());
 			}else {
 				acceptMrX(move);
 			}
@@ -214,12 +214,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 			if (isLocationEmpty(nextLocation) || players.get(0).location() == nextLocation) {
 				if (current.hasTickets(t1)) {
-					validmoves.add(firstMove); //if the current player has the tickets t, then this is a valid move and is then added to the Set of valid moves
+					validmoves.add(firstMove); //if the current player has the ticket t1, then this is a valid move and is then added to the Set of valid moves
 				}
 			}
 		}
 		if (validmoves.isEmpty()) {
-			validmoves.add(new PassMove(current.colour())); //if the set, moves, is empty then there are no valid moves hence Pass move
+			validmoves.add(new PassMove(current.colour())); //if the set, validmoves, is empty then there are no valid moves hence Pass move
 		}
 
 		return Collections.unmodifiableSet(validmoves);
@@ -229,19 +229,19 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 
 	// returns all valid Moves MrX can make
-	private Set<Move> mrXValidMoves(ScotlandYardPlayer current) {
+	private Set<Move> mrXValidMoves(ScotlandYardPlayer X) {
 		Set<Move> validmoves = new HashSet<>();
-		for (Edge<Integer, Transport> x : graph.getEdgesFrom(graph.getNode(current.location()))) {
+		for (Edge<Integer, Transport> x : graph.getEdgesFrom(graph.getNode(X.location()))) {
 
 			Integer nextLocation = x.destination().value();
 			Ticket t1 = fromTransport(x.data());
-			TicketMove firstMove = new TicketMove(current.colour(), t1, nextLocation);
+			TicketMove firstMove = new TicketMove(BLACK, t1, nextLocation);
 			TicketMove firstMoveSecret = new TicketMove(BLACK, SECRET, nextLocation);
 			if (isLocationEmpty(nextLocation)) {
-				if (current.hasTickets(t1)) {
+				if (X.hasTickets(t1)) {
 					validmoves.add(firstMove);
 				}
-				if (current.hasTickets(SECRET)) {
+				if (X.hasTickets(SECRET)) {
 					validmoves.add(firstMoveSecret);
 				}
 			}
@@ -249,31 +249,31 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 
 
-			// Double Move
+			// generates available Double Moves
 
 			for (Edge<Integer, Transport> x2 : graph.getEdgesFrom(graph.getNode(nextLocation))) { //getting the edges from nextlocation after making first move
 				Integer nextLocationDouble = x2.destination().value();
 				Ticket t2 = fromTransport(x2.data());
-				TicketMove secondMove = new TicketMove(current.colour(), t2, nextLocationDouble);
-				TicketMove secondMoveSecret = new TicketMove(current.colour(), SECRET, nextLocationDouble);
-				if (isLocationEmpty(nextLocationDouble) && isLocationEmpty(nextLocation) && (current.hasTickets(DOUBLE)) && (getCurrentRound() < (rounds.size() - 1))) {
+				TicketMove secondMove = new TicketMove(X.colour(), t2, nextLocationDouble);
+				TicketMove secondMoveSecret = new TicketMove(X.colour(), SECRET, nextLocationDouble);
+				if (isLocationEmpty(nextLocationDouble) && isLocationEmpty(nextLocation) && (X.hasTickets(DOUBLE)) && (getCurrentRound() < (rounds.size() - 1))) {
 					if (t2.equals(t1)) {
-						if (current.tickets().get(t2) >= 2)
-							validmoves.add(new DoubleMove(current.colour(), firstMove, secondMove));
+						if (X.tickets().get(t2) >= 2)
+							validmoves.add(new DoubleMove(BLACK, firstMove, secondMove));
 					}
-					else if (current.hasTickets(t2) && current.hasTickets(t1)) {
-						validmoves.add(new DoubleMove(current.colour(), firstMove, secondMove));
+					else if (X.hasTickets(t2) && X.hasTickets(t1)) {
+						validmoves.add(new DoubleMove(BLACK, firstMove, secondMove));
 					}
-					if (current.hasTickets(SECRET)) {
-						if (current.hasTickets(t2)) {
-							validmoves.add(new DoubleMove(current.colour(), firstMoveSecret, secondMove));
+					if (X.hasTickets(SECRET)) {
+						if (X.hasTickets(t2)) {
+							validmoves.add(new DoubleMove(BLACK, firstMoveSecret, secondMove));
 						}
-						if (current.hasTickets(t1)) {
-							validmoves.add(new DoubleMove(current.colour(), firstMove, secondMoveSecret));
+						if (X.hasTickets(t1)) {
+							validmoves.add(new DoubleMove(BLACK, firstMove, secondMoveSecret));
 						}
 					}
-					if (current.tickets().get(SECRET) >= 2)
-						validmoves.add(new DoubleMove(current.colour(), firstMoveSecret, secondMoveSecret));
+					if (X.tickets().get(SECRET) >= 2)
+						validmoves.add(new DoubleMove(BLACK, firstMoveSecret, secondMoveSecret));
 				}
 			}
 		}
@@ -283,8 +283,10 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	}
 
 	private boolean isLocationEmpty(Integer location) {
-		for (ScotlandYardPlayer x : detectives) {  //loop through detectives because if mrX is at a location then detectives can still go to that location
-			if (location == x.location()) return false;
+		for (ScotlandYardPlayer x : players) {
+			if (location == x.location() && x.isDetective()) {
+				return false;
+			}
 		}
 		return true;
 	}
@@ -306,7 +308,20 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public Set<Colour> getWinningPlayers() {
-		return Collections.emptySet();
+		Set<Colour> winner = new HashSet<>();
+
+		if (noRoundsLeft() || detectivesCantMove()){
+			winner.add(BLACK);
+		}
+
+		if (mrXCantMove() || mrXCaptured()){
+			for(ScotlandYardPlayer x : detectives){
+				winner.add(x.colour());
+			}
+
+		}
+		return Collections.unmodifiableSet(winner);
+
 	}
 
 	@Override
@@ -334,20 +349,19 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public boolean isGameOver() {
-		if (detectivesCantMove() || mrXCantMove() || mrXFound() || noRoundsLeft()) {
+		if (detectivesCantMove() || mrXCantMove() || mrXCaptured() || noRoundsLeft()) {
 			return true;
 
 		}
 		return false;
 
-		//return isGameOver
 	}
 
 
 	private boolean detectivesCantMove(){
-		for(ScotlandYardPlayer x : detectives){
+		for(ScotlandYardPlayer x : players){
 			for(Move m : detectiveValidMoves(x)){
-				if (m instanceof PassMove){
+				if ((m instanceof PassMove) && x.isDetective()){
 					return true;
 
 				}
@@ -361,19 +375,31 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 
 	private boolean mrXCantMove(){
+		ScotlandYardPlayer MrX = players.get(0);
+		for (Move m : mrXValidMoves(MrX)){
+			if (m instanceof PassMove){
+				return true;
+			}
+		}
 		return false;
 	}
 
 
 
-	private boolean mrXFound(){
+
+
+	private boolean mrXCaptured(){
 		return false;
 	}
 
 
-	private boolean noRoundsLeft(){
+	private boolean noRoundsLeft() {
+		if (getCurrentRound() >= rounds.size()) {
+			return true;
+		}
 		return false;
 	}
+
 
 
 
