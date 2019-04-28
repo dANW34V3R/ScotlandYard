@@ -132,19 +132,23 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 		currentPlayerIndex = (currentPlayerIndex + 1) % players.size();    //Increments the player index. Modulus allows counter to loop back to 0(Mr X) after all detectives have moved
 
-		if(currentPlayer.colour() == BLACK){
+		if(currentPlayer.colour() == BLACK){							   //The move is accepted and the tickets are reduced
 			System.out.println("test ---- MrX");
 			if(move.toString().substring(0,6).equals("Double")){           //If a double move is chosen Mr X accepts his move in a different way (See acceptDoubleMrX)
 				System.out.println("DOUBLE");
 				acceptDoubleMrX(move);
 				acceptMrX(((DoubleMove) move).firstMove());
 				acceptMrX(((DoubleMove) move).secondMove());
+				currentPlayer.removeTicket(((DoubleMove) move).firstMove().ticket());
+				currentPlayer.removeTicket(((DoubleMove) move).secondMove().ticket());
 			}else {
 				acceptMrX(move);										   //Otherwise MrX accepts normally
+				currentPlayer.removeTicket(move.ticket());
 			}
 		}else{
 			System.out.println("test ---- Detective");
 			acceptDetective(move);										  //If the player is not Mr X they will accept the move as a detective
+			currentPlayer.removeTicket(move.ticket());
 		}
 
 
@@ -294,6 +298,11 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public Collection<Spectator> getSpectators() {
+//		List<Spectator> spectatorsCopy = new ArrayList<>();
+//		for(Spectator sp : spectators){
+//			spectatorsCopy.add(new );
+//		}
+
 		return spectators;
 	}
 
