@@ -25,7 +25,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	List<Spectator> spectators = new ArrayList<>();
 	List<ScotlandYardPlayer> nonmrxdetectives;
 	List<Integer> showRounds = new ArrayList<>();
-	{3,8,13,18,24};
+	
 
 
 	public ScotlandYardModel(List<Boolean> rounds, Graph<Integer, Transport> graph,
@@ -191,7 +191,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	public void acceptMrX(Move move){
 		System.out.println("test currRound ----" + currentRound);
-		if(showRounds.)
 
 		for(Spectator s : spectators){									  //All spectators will be notified of the round starting and onMoveMade will be called for each one
 			s.onRoundStarted(this, currentRound);
