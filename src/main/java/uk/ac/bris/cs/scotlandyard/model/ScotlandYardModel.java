@@ -23,7 +23,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	private boolean isGameOver = false;
 	int mrXLastLocation = 0;
 	List<Spectator> spectators = new ArrayList<>();
-	List<ScotlandYardPlayer> detectives;
+	List<ScotlandYardPlayer> nomrxdetectives;
 
 
 	public ScotlandYardModel(List<Boolean> rounds, Graph<Integer, Transport> graph,
@@ -78,9 +78,9 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 			players.add(new ScotlandYardPlayer(configuration.player, configuration.colour, configuration.location, configuration.tickets));
 
-			detectives = new ArrayList<>();
+			nomrxdetectives = new ArrayList<>();
 			for (ScotlandYardPlayer p : players) {
-				if (p.isDetective()) detectives.add(p);
+				if (p.isDetective()) nomrxdetectives.add(p);
 			}
 		}
 	}
@@ -136,6 +136,9 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			System.out.println("test ---- MrX");
 			if(move.toString().substring(0,6).equals("Double")){           //If a double move is chosen Mr X accepts his move in a different way (See acceptDoubleMrX)
 				System.out.println("DOUBLE");
+
+
+
 				acceptDoubleMrX(move);
 				acceptMrX(((DoubleMove) move).firstMove());
 				acceptMrX(((DoubleMove) move).secondMove());
@@ -143,12 +146,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 				currentPlayer.removeTicket(((DoubleMove) move).secondMove().ticket());
 			}else {
 				acceptMrX(move);										   //Otherwise MrX accepts normally
-				currentPlayer.removeTicket(move.ticket());
+				currentPlayer.removeTicket(((TicketMove) move).ticket());
 			}
 		}else{
 			System.out.println("test ---- Detective");
 			acceptDetective(move);										  //If the player is not Mr X they will accept the move as a detective
-			currentPlayer.removeTicket(move.ticket());
+			currentPlayer.removeTicket(((TicketMove) move).ticket());
 		}
 
 
@@ -317,6 +320,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public Set<Colour> getWinningPlayers() {
+		System.out.println("Enter get winning players ");
 		Set<Colour> winner = new HashSet<>();
 
 		if (noRoundsLeft() || detectivesCantMove()){
