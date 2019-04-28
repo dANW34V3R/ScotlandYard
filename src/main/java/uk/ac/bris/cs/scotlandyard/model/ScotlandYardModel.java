@@ -137,8 +137,8 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			if(move.toString().substring(0,6).equals("Double")){
 				System.out.println("DOUBLE");
 				acceptDoubleMrX(move);
-				acceptDoubleMrX(((DoubleMove) move).firstMove());
-				acceptDoubleMrX(((DoubleMove) move).secondMove());
+				acceptMrX(((DoubleMove) move).firstMove());
+				acceptMrX(((DoubleMove) move).secondMove());
 			}else {
 				acceptMrX(move);
 			}
@@ -171,6 +171,13 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	public void doMove(){
 		System.out.println("test currIndex ----" + currentPlayerIndex);
 		ScotlandYardPlayer player = players.get(currentPlayerIndex);
+		for(Move m : validMoves(player)){
+			if(!m.toString().substring(0,1).equals("D")) {
+				System.out.println("Valid Moves ---" + m.toString());
+			}
+		}
+
+
 		player.player().makeMove(this, player.location(), validMoves(player), requireNonNull(this));
 	}
 
@@ -245,9 +252,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 					validmoves.add(firstMoveSecret);
 				}
 			}
-
-
-
 
 			// Double Move
 
