@@ -24,8 +24,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	int mrXLastLocation = 0;
 	List<Spectator> spectators = new ArrayList<>();
 	List<ScotlandYardPlayer> nonmrxdetectives;
-	List<Integer> showRounds = new ArrayList<>();
-	{3,8,13,18,24};
+	private boolean alldetectivesmoved = false;
 
 
 	public ScotlandYardModel(List<Boolean> rounds, Graph<Integer, Transport> graph,
@@ -35,11 +34,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		this.rounds = requireNonNull(rounds);
 		this.graph = requireNonNull(graph);
 		players = new ArrayList<>();
-		showRounds.add(3);
-		showRounds.add(8);
-		showRounds.add(13);
-		showRounds.add(18);
-		showRounds.add(24);
 
 		if (rounds.isEmpty()) {
 			throw new IllegalArgumentException("Empty rounds");
@@ -144,14 +138,28 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			if(move.toString().substring(0,6).equals("Double")){           //If a double move is chosen Mr X accepts his move in a different way (See acceptDoubleMrX)
 				System.out.println("DOUBLE");
 				acceptDoubleMrX(move);
-				acceptMrX(((DoubleMove) move).firstMove());
-				acceptMrX(((DoubleMove) move).secondMove());
 				currentPlayer.removeTicket(((DoubleMove) move).firstMove().ticket());
 				currentPlayer.removeTicket(((DoubleMove) move).secondMove().ticket());
 				currentPlayer.location(((DoubleMove) move).finalDestination());
 			}else {
-				acceptMrX(move);										   //Otherwise MrX accepts normally
-				currentPlayer.removeTicket(((TicketMove)move).ticket());
+                Move m;
+                if(!getRounds().contains(currentRound)){
+                    if(move instanceof TicketMove) {
+                        m = new TicketMove(BLACK, ((TicketMove) move).ticket(), mrXLastLocation);
+                    }else if(move instanceof PassMove){
+                        m = new PassMove(BLACK);
+                    }else{
+                        //---------------------------------------------------------------------------------
+                        System.out.println("test mrXaccept ---" + move.toString());
+                        m = move;
+                    }
+                }else{
+                    mrXLastLocation = ((TicketMove) move).destination();
+                    m = move;
+                }
+
+				acceptMrX(m);										   //Otherwise MrX accepts normally
+				currentPlayer.removeTicket(((TicketMove) move).ticket());
 				currentPlayer.location(((TicketMove) move).destination());
 			}
 		}else{
@@ -161,8 +169,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			currentPlayer.location(((TicketMove) move).destination());
 		}
 
-
-
 		System.out.println("test accept currIndex ----" + currentPlayerIndex);
 
 		System.out.println("test endRoundLocation ---" + currentPlayer.location());
@@ -170,8 +176,15 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		if(currentPlayerIndex != 0){									  //If the current player is not the last detective, "doMove" is called on the next detective
 			doMove();
 		}else {
-			for(Spectator s : spectators){								  //Otherwise all of the spectators are notified of the rotation being completed
-				s.onRotationComplete(this);
+			alldetectivesmoved = true;
+			if(!isGameOver()){
+				for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
+					s.onRotationComplete(this);
+				}
+			}else{
+				for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
+						s.onGameOver(this,getWinningPlayers());
+				}
 			}
 		}
 
@@ -179,6 +192,10 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public void startRotate() {
+		alldetectivesmoved = false;
+		if (isGameOver()){
+			throw new IllegalStateException("Game is over");
+		}
 		//currentPlayerIndex = 0;
 		doMove();														  //This will call doMove for the first player which will always be mrX as currentPlayer index will be 0 at this point
 	}
@@ -191,7 +208,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	public void acceptMrX(Move move){
 		System.out.println("test currRound ----" + currentRound);
-		if(showRounds.)
 
 		for(Spectator s : spectators){									  //All spectators will be notified of the round starting and onMoveMade will be called for each one
 			s.onRoundStarted(this, currentRound);
@@ -201,10 +217,37 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	}
 
 	public void acceptDoubleMrX(Move move){
-		for(Spectator s : spectators){									  //onRoundStarted does not need to be called at first when Mr X uses a double move
-			s.onMoveMade(this, move);
+		Move m;
+		System.out.println(currentRound);
+		System.out.println(getRounds().toString());
+		System.out.println("CurrRounds" + currentRound);
+		if(!(getRounds().get(currentRound)) && !(getRounds().get(currentRound + 1))){
+			System.out.println("double no first");
+			m = new DoubleMove(BLACK, ((DoubleMove) move).firstMove().ticket() ,mrXLastLocation, ((DoubleMove) move).secondMove().ticket(),mrXLastLocation);
+		}else{
+			if(getRounds().get(currentRound)){
+				System.out.println("double currRound");
+				mrXLastLocation = ((DoubleMove) move).firstMove().destination();
+				if(getRounds().get(currentRound + 1)) {
+					m = new DoubleMove(BLACK, ((DoubleMove) move).firstMove().ticket(), mrXLastLocation, ((DoubleMove) move).secondMove().ticket(), ((DoubleMove) move).secondMove().destination());
+				}else{
+					m = new DoubleMove(BLACK, ((DoubleMove) move).firstMove().ticket(), mrXLastLocation, ((DoubleMove) move).secondMove().ticket(), mrXLastLocation);
+				}
+			}else{
+				System.out.println("double currRound + 1");
+				m = new DoubleMove(BLACK, ((DoubleMove) move).firstMove().ticket() ,mrXLastLocation, ((DoubleMove) move).secondMove().ticket(), ((DoubleMove) move).secondMove().destination());
+				mrXLastLocation = ((DoubleMove) move).secondMove().destination();
+			}
 		}
-		currentRound += 1;												  //currentRound is again incremented to show that Mr X has moved
+
+		for(Spectator s : spectators){									  //onRoundStarted does not need to be called at first when Mr X uses a double move
+			s.onMoveMade(this, m);
+		}
+
+        currentRound += 1;                                                //currentRound is again incremented to show that Mr X has moved
+
+        acceptMrX(((DoubleMove) m).firstMove());
+        acceptMrX(((DoubleMove) m).secondMove());
 	}
 
 
