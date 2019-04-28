@@ -317,17 +317,24 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public Set<Colour> getWinningPlayers() {
+		System.out.println("Enter get winning players ");
 		Set<Colour> winner = new HashSet<>();
+		
 
 		if (noRoundsLeft() || detectivesCantMove()){
 			winner.add(BLACK);
 		}
 
 		if (mrXCantMove() || mrXCaptured()){
-			for(ScotlandYardPlayer x : detectives){
+			for(ScotlandYardPlayer x : nonmrxdetectives){
 				winner.add(x.colour());
 			}
 
+		}
+		System.out.println(winner.size());
+		for(Colour x : winner){
+			System.out.println("new");
+			System.out.println(x.toString());
 		}
 		return Collections.unmodifiableSet(winner);
 
@@ -398,6 +405,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 
 	private boolean mrXCaptured(){
+		ScotlandYardPlayer mrX = players.get(0);
+		for (ScotlandYardPlayer x : nonmrxdetectives){
+			if(x.location() == mrX.location()){
+				return true;
+			}
+		}
 		return false;
 	}
 
