@@ -25,7 +25,8 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	List<Spectator> spectators = new ArrayList<>();
 	List<ScotlandYardPlayer> nonmrxdetectives;
 	List<Integer> showRounds = new ArrayList<>();
-	
+	private boolean alldetectivesmoved = false;
+
 
 
 	public ScotlandYardModel(List<Boolean> rounds, Graph<Integer, Transport> graph,
@@ -170,6 +171,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		if(currentPlayerIndex != 0){									  //If the current player is not the last detective, "doMove" is called on the next detective
 			doMove();
 		}else {
+			alldetectivesmoved = true;
 			for(Spectator s : spectators){								  //Otherwise all of the spectators are notified of the rotation being completed
 				s.onRotationComplete(this);
 			}
@@ -179,7 +181,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public void startRotate() {
+		alldetectivesmoved = false;
+		if (isGameOver()){
+			throw new IllegalStateException("Game is over");
+		}
 		//currentPlayerIndex = 0;
+
 		doMove();														  //This will call doMove for the first player which will always be mrX as currentPlayer index will be 0 at this point
 	}
 
@@ -324,9 +331,8 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public Set<Colour> getWinningPlayers() {
-		System.out.println("Enter get winning players ");
-		Set<Colour> winner = new HashSet<>();
 
+		Set<Colour> winner = new HashSet<>();
 
 		if (noRoundsLeft() || detectivesCantMove()){
 			winner.add(BLACK);
@@ -337,11 +343,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 				winner.add(x.colour());
 			}
 
-		}
-		System.out.println(winner.size());
-		for(Colour x : winner){
-			System.out.println("new");
-			System.out.println(x.toString());
 		}
 		return Collections.unmodifiableSet(winner);
 
@@ -454,4 +455,3 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	}
 
 
-}
