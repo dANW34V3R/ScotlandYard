@@ -164,9 +164,10 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 					m = move;
 				}
 
-				acceptMrX(m);										   //Otherwise MrX accepts normally
+
 				currentPlayer.removeTicket(((TicketMove) move).ticket());
 				currentPlayer.location(((TicketMove) move).destination());
+				acceptMrX(m);										   //Otherwise MrX accepts normally
 			}
 		}else{
 			System.out.println("test ---- Detective");
@@ -210,7 +211,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	public void startRotate() {
 		alldetectivesmoved = false;
 		if (isGameOver()){
-			//throw new IllegalStateException("Game is over");
+			throw new IllegalStateException("Game is over");
 		}
 		//currentPlayerIndex = 0;
 		doMove();														  //This will call doMove for the first player which will always be mrX as currentPlayer index will be 0 at this point
@@ -431,26 +432,30 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public boolean isGameOver() {
+
 		if (detectivesCantMove() || mrXCantMove() || mrXCaptured() || noRoundsLeft()) {
 			return true;
 		}
+
 		return false;
 
 	}
 
 
 	private boolean detectivesCantMove(){
+		boolean alldetectivesstuck = true;
+
 		for(ScotlandYardPlayer x : players){
 			for(Move m : detectiveValidMoves(x)){
-				if ((m instanceof PassMove) && x.isDetective()){
-					return true;
+				if (!(m instanceof PassMove) && x.isDetective()){
+					alldetectivesstuck = false;
 
 				}
 
 			}
 
 		}
-		return false;
+		return alldetectivesstuck;
 	}
 
 
@@ -462,8 +467,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 		return false;
 	}
-
-
 
 
 
@@ -484,6 +487,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		}
 		return false;
 	}
+
 
 
 
