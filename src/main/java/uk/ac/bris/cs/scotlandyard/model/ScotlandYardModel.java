@@ -20,7 +20,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	private int currentPlayerIndex = 0;
 	private int currentRound = 0;
 	private int rotation = 0;
-	private boolean isGameOver = false;
 	int mrXLastLocation = 0;
 	List<Spectator> spectators = new ArrayList<>();
 	List<ScotlandYardPlayer> nonmrxdetectives;
@@ -135,13 +134,14 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 		if(currentPlayer.colour() == BLACK){							   //The move is accepted, tickets are reduced, location updated
 			System.out.println("test ---- MrX");
-			if(move.toString().substring(0,6).equals("Double")){           //If a double move is chosen Mr X accepts his move in a different way (See acceptDoubleMrX)
-				System.out.println("DOUBLE");
+			if(move instanceof DoubleMove){           //If a double move is chosen Mr X accepts his move in a different way (See acceptDoubleMrX)
+				System.out.println("DOUBLE --");
+				currentPlayer.removeTicket(DOUBLE);
 				acceptDoubleMrX(move);
 				System.out.println(currentPlayer.tickets().toString());
-				currentPlayer.removeTicket(((DoubleMove) move).firstMove().ticket());
-				currentPlayer.removeTicket(((DoubleMove) move).secondMove().ticket());
-				currentPlayer.removeTicket(DOUBLE);
+				System.out.println("DOUBLE --");
+
+
 				System.out.println(currentPlayer.tickets().toString());
 
 				System.out.println(currentPlayer.location());
@@ -173,10 +173,10 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			System.out.println("test ---- Detective");
 			if(move instanceof TicketMove) {
 				System.out.println("TicketMove");
-				acceptDetective(move);										  //If the player is not Mr X they will accept the move as a detective
 				currentPlayer.removeTicket(((TicketMove)move).ticket());
 				players.get(0).addTicket(((TicketMove)move).ticket());
 				currentPlayer.location(((TicketMove) move).destination());
+				acceptDetective(move);										  //If the player is not Mr X they will accept the move as a detective
 			}else{
 				acceptDetective(new PassMove(move.colour()));										  //If the player is not Mr X they will accept the move as a detective
 			}
@@ -188,23 +188,27 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		System.out.println("test accept currIndex ----" + currentPlayerIndex);
 
 		System.out.println("test endRoundLocation ---" + currentPlayer.location());
-		System.out.println(players.get(0).location());
+		System.out.println("MrX end of round location" + players.get(0).location());
 
-		if(currentPlayerIndex != 0){									  //If the current player is not the last detective, "doMove" is called on the next detective
-			doMove();
-		}else {
-			alldetectivesmoved = true;
-			if(!isGameOver()){
-				for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
-					s.onRotationComplete(this);
-				}
-			}else{
-				for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
-					s.onGameOver(this,getWinningPlayers());
+		Boolean over = isGameOver();
+		System.out.println(over);
+		if(isGameOver()){
+			Set<Colour> winning = getWinningPlayers();
+			for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
+				s.onGameOver(this,winning);
+			}
+		}else{
+			if(currentPlayerIndex != 0){									  //If the current player is not the last detective, "doMove" is called on the next detective
+				doMove();
+			}else {
+				if(!isGameOver()){
+					alldetectivesmoved = true;
+					for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
+						s.onRotationComplete(this);
+					}
 				}
 			}
 		}
-
 	}
 
 	@Override
@@ -225,12 +229,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	public void acceptMrX(Move move){
 		System.out.println("test currRound ----" + currentRound);
+		currentRound += 1;												  //The currentRound variable is incremented to show that MrX had made a move
 
 		for(Spectator s : spectators){									  //All spectators will be notified of the round starting and onMoveMade will be called for each one
 			s.onRoundStarted(this, currentRound);
 			s.onMoveMade(this, move);
 		}
-		currentRound += 1;												  //The currentRound variable is incremented to show that MrX had made a move
 	}
 
 	public void acceptDoubleMrX(Move move){
@@ -257,18 +261,23 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			}
 		}
 
+
 		for(Spectator s : spectators){									  //onRoundStarted does not need to be called at first when Mr X uses a double move
 			s.onMoveMade(this, m);
 		}
 
-		currentRound += 1;                                                //currentRound is again incremented to show that Mr X has moved
 
+		players.get(0).removeTicket(((DoubleMove) move).firstMove().ticket());
 		acceptMrX(((DoubleMove) m).firstMove());
+		players.get(0).removeTicket(((DoubleMove) move).secondMove().ticket());
 		acceptMrX(((DoubleMove) m).secondMove());
+		//currentRound += 1;                                                //currentRound is again incremented to show that Mr X has moved
+
 	}
 
 
 	public void acceptDetective(Move move){
+		System.out.println("accept Detective");
 		for(Spectator s : spectators){
 			s.onMoveMade(this, move);								  //onMoveMade is called for each spectator
 		}
@@ -384,7 +393,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public Set<Colour> getWinningPlayers() {
-		System.out.println("Enter get winning players ");
+		//System.out.println("Enter get winning players ");
 		Set<Colour> winner = new HashSet<>();
 
 
@@ -398,11 +407,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			}
 
 		}
-		System.out.println(winner.size());
-		for(Colour x : winner){
-			System.out.println("new");
-			System.out.println(x.toString());
-		}
+		//System.out.println(winner.size());
+//		for(Colour x : winner){
+//			System.out.println("new");
+//			System.out.println(x.toString());
+//		}
+		System.out.println(winner.toString());
 		return Collections.unmodifiableSet(winner);
 
 	}
