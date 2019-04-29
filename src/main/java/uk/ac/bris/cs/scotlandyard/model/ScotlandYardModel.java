@@ -138,12 +138,18 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			if(move.toString().substring(0,6).equals("Double")){           //If a double move is chosen Mr X accepts his move in a different way (See acceptDoubleMrX)
 				System.out.println("DOUBLE");
 				acceptDoubleMrX(move);
+				System.out.println(currentPlayer.tickets().toString());
 				currentPlayer.removeTicket(((DoubleMove) move).firstMove().ticket());
 				currentPlayer.removeTicket(((DoubleMove) move).secondMove().ticket());
+				currentPlayer.removeTicket(DOUBLE);
+				System.out.println(currentPlayer.tickets().toString());
+
+				System.out.println(currentPlayer.location());
 				currentPlayer.location(((DoubleMove) move).finalDestination());
+				System.out.println(currentPlayer.location());
 			}else {
                 Move m;
-                if(!getRounds().contains(currentRound)){
+                if(!getRounds().get(currentRound)){
                     if(move instanceof TicketMove) {
                         m = new TicketMove(BLACK, ((TicketMove) move).ticket(), mrXLastLocation);
                     }else if(move instanceof PassMove){
@@ -166,6 +172,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			System.out.println("test ---- Detective");
 			acceptDetective(move);										  //If the player is not Mr X they will accept the move as a detective
 			currentPlayer.removeTicket(((TicketMove)move).ticket());
+			players.get(0).addTicket(((TicketMove)move).ticket());
 			currentPlayer.location(((TicketMove) move).destination());
 		}
 
