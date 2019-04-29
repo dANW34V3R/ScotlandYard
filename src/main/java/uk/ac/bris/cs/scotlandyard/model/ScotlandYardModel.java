@@ -130,8 +130,8 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			throw new IllegalArgumentException("Move is not valid");       //Throws an exception if the move chosen is not part of the valid moves
 		}
 
-
 		currentPlayerIndex = (currentPlayerIndex + 1) % players.size();    //Increments the player index. Modulus allows counter to loop back to 0(Mr X) after all detectives have moved
+
 
 		if(currentPlayer.colour() == BLACK){							   //The move is accepted, tickets are reduced, location updated
 			System.out.println("test ---- MrX");
@@ -170,15 +170,24 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			}
 		}else{
 			System.out.println("test ---- Detective");
-			acceptDetective(move);										  //If the player is not Mr X they will accept the move as a detective
-			currentPlayer.removeTicket(((TicketMove)move).ticket());
-			players.get(0).addTicket(((TicketMove)move).ticket());
-			currentPlayer.location(((TicketMove) move).destination());
+			if(move instanceof TicketMove) {
+				System.out.println("TicketMove");
+				acceptDetective(move);										  //If the player is not Mr X they will accept the move as a detective
+				currentPlayer.removeTicket(((TicketMove)move).ticket());
+				players.get(0).addTicket(((TicketMove)move).ticket());
+				currentPlayer.location(((TicketMove) move).destination());
+			}else{
+				acceptDetective(new PassMove(move.colour()));										  //If the player is not Mr X they will accept the move as a detective
+			}
+
+
 		}
+
 
 		System.out.println("test accept currIndex ----" + currentPlayerIndex);
 
 		System.out.println("test endRoundLocation ---" + currentPlayer.location());
+		System.out.println(players.get(0).location());
 
 		if(currentPlayerIndex != 0){									  //If the current player is not the last detective, "doMove" is called on the next detective
 			doMove();
@@ -201,7 +210,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	public void startRotate() {
 		alldetectivesmoved = false;
 		if (isGameOver()){
-			throw new IllegalStateException("Game is over");
+			//throw new IllegalStateException("Game is over");
 		}
 		//currentPlayerIndex = 0;
 		doMove();														  //This will call doMove for the first player which will always be mrX as currentPlayer index will be 0 at this point
@@ -278,7 +287,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			Integer nextLocation = edge.destination().value();
 			Ticket t1 = fromTransport(edge.data()); //fromTransport finds the ticket for a given transport type
 			TicketMove firstMove = new TicketMove(current.colour(), t1, nextLocation);
-
 			if (isLocationEmpty(nextLocation) || players.get(0).location() == nextLocation) {
 				if (current.hasTickets(t1)) {
 					validmoves.add(firstMove); //if the current player has the ticket t1, then this is a valid move and is then added to the Set of valid moves
@@ -425,7 +433,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	public boolean isGameOver() {
 		if (detectivesCantMove() || mrXCantMove() || mrXCaptured() || noRoundsLeft()) {
 			return true;
-
 		}
 		return false;
 
