@@ -148,21 +148,21 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 				currentPlayer.location(((DoubleMove) move).finalDestination());
 				System.out.println(currentPlayer.location());
 			}else {
-                Move m;
-                if(!getRounds().get(currentRound)){
-                    if(move instanceof TicketMove) {
-                        m = new TicketMove(BLACK, ((TicketMove) move).ticket(), mrXLastLocation);
-                    }else if(move instanceof PassMove){
-                        m = new PassMove(BLACK);
-                    }else{
-                        //---------------------------------------------------------------------------------
-                        System.out.println("test mrXaccept ---" + move.toString());
-                        m = move;
-                    }
-                }else{
-                    mrXLastLocation = ((TicketMove) move).destination();
-                    m = move;
-                }
+				Move m;
+				if(!getRounds().get(currentRound)){
+					if(move instanceof TicketMove) {
+						m = new TicketMove(BLACK, ((TicketMove) move).ticket(), mrXLastLocation);
+					}else if(move instanceof PassMove){
+						m = new PassMove(BLACK);
+					}else{
+						//---------------------------------------------------------------------------------
+						System.out.println("test mrXaccept ---" + move.toString());
+						m = move;
+					}
+				}else{
+					mrXLastLocation = ((TicketMove) move).destination();
+					m = move;
+				}
 
 				acceptMrX(m);										   //Otherwise MrX accepts normally
 				currentPlayer.removeTicket(((TicketMove) move).ticket());
@@ -199,7 +199,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 				}
 			}else{
 				for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
-						s.onGameOver(this,getWinningPlayers());
+					s.onGameOver(this,getWinningPlayers());
 				}
 			}
 		}
@@ -260,10 +260,10 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			s.onMoveMade(this, m);
 		}
 
-        currentRound += 1;                                                //currentRound is again incremented to show that Mr X has moved
+		currentRound += 1;                                                //currentRound is again incremented to show that Mr X has moved
 
-        acceptMrX(((DoubleMove) m).firstMove());
-        acceptMrX(((DoubleMove) m).secondMove());
+		acceptMrX(((DoubleMove) m).firstMove());
+		acceptMrX(((DoubleMove) m).secondMove());
 	}
 
 
@@ -456,12 +456,10 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 
 	private boolean mrXCantMove(){
-		ScotlandYardPlayer MrX = players.get(0);
-		for (Move m : mrXValidMoves(MrX)){
-			if (m instanceof PassMove){
-				return true;
+		if(mrXValidMoves(players.get(0)).isEmpty()){
+			return true;
 			}
-		}
+
 		return false;
 	}
 
