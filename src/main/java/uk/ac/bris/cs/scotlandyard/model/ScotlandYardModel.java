@@ -204,8 +204,15 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 				doMove();
 			}else {
 				alldetectivesmoved = true;
-				for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
-					s.onRotationComplete(this);
+				if(isGameOver()){
+					Set<Colour> winning = getWinningPlayers();
+					for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
+						s.onGameOver(this,winning);
+					}
+				}else{
+					for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
+						s.onRotationComplete(this);
+					}
 				}
 			}
 		}
@@ -467,36 +474,43 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			}
 
 		}
+		System.out.println("DCM" + alldetectivesstuck);
 		return alldetectivesstuck;
 	}
 
 
 
 	private boolean mrXCantMove(){
-		if(mrXValidMoves(players.get(0)).isEmpty()){
+		System.out.print("mrXCM");
+		if(mrXValidMoves(players.get(0)).isEmpty() && alldetectivesmoved){
 			return true;
-			}
-
+		}
+		System.out.println(false);
 		return false;
 	}
 
 
 
 	private boolean mrXCaptured(){
+		System.out.print("mrXCAPTURED ");
 		ScotlandYardPlayer mrX = players.get(0);
 		for (ScotlandYardPlayer x : nonmrxdetectives){
 			if(x.location() == mrX.location()){
 				return true;
 			}
 		}
+		System.out.println(false);
 		return false;
 	}
 
 
 	private boolean noRoundsLeft() {
-		if (getCurrentRound() >= rounds.size()) {
+		System.out.print("NRL ");
+		if ((getCurrentRound() >= rounds.size()) && alldetectivesmoved) {
+			System.out.println(true);
 			return true;
 		}
+		System.out.println(false);
 		return false;
 	}
 
