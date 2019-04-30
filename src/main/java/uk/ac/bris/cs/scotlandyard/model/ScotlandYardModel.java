@@ -192,23 +192,24 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 		Boolean over = isGameOver();
 		System.out.println(over);
-		if(isGameOver()){
-			Set<Colour> winning = getWinningPlayers();
-			for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
-				s.onGameOver(this,winning);
-			}
-		}else{
-			if(currentPlayerIndex != 0){									  //If the current player is not the last detective, "doMove" is called on the next detective
+
+
+		if(currentPlayerIndex != 0){									  //If the current player is not the last detective, "doMove" is called on the next detective
 				doMove();
-			}else {
-				if(!isGameOver()){
-					alldetectivesmoved = true;
-					for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
-						s.onRotationComplete(this);
-					}
+		}else {
+			if(!isGameOver()){
+				alldetectivesmoved = true;
+				for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
+					s.onRotationComplete(this);
+				}
+			}else{
+				Set<Colour> winning = getWinningPlayers();
+				for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
+					s.onGameOver(this,winning);
 				}
 			}
 		}
+
 	}
 
 	@Override
@@ -251,6 +252,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 				mrXLastLocation = ((DoubleMove) move).firstMove().destination();
 				if(getRounds().get(currentRound + 1)) {
 					m = new DoubleMove(BLACK, ((DoubleMove) move).firstMove().ticket(), mrXLastLocation, ((DoubleMove) move).secondMove().ticket(), ((DoubleMove) move).secondMove().destination());
+					mrXLastLocation = ((DoubleMove) move).secondMove().destination();
 				}else{
 					m = new DoubleMove(BLACK, ((DoubleMove) move).firstMove().ticket(), mrXLastLocation, ((DoubleMove) move).secondMove().ticket(), mrXLastLocation);
 				}
@@ -420,6 +422,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	@Override
 	public Optional<Integer> getPlayerLocation(Colour colour) {
 		if(colour == BLACK){
+			System.out.println("getPlayerLocation" + mrXLastLocation);
 			return Optional.of(mrXLastLocation);
 		}
 		for(ScotlandYardPlayer player : players){
