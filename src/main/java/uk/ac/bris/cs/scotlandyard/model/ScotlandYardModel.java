@@ -113,40 +113,46 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public void accept(Move move) {
-		System.out.println("test ----" + move.toString());
+//		System.out.println("test ----" + move.toString());
 
-//		if (move == null) {
-//			throw new NullPointerException("Move cannot be null");
-//		}
+		if (move == null) {
+			throw new NullPointerException("Move cannot be null");
+		}
 
 
 		ScotlandYardPlayer currentPlayer = players.get(currentPlayerIndex);
 
-		System.out.println("test startRoundLocation ---" + currentPlayer.location());
+		//System.out.println("test startRoundLocation ---" + currentPlayer.location());
 
 		if (!(validMoves(currentPlayer).contains(move))){
-			System.out.println("test throws----" + move.toString());
+			//System.out.println("test throws----" + move.toString());
 			throw new IllegalArgumentException("Move is not valid");       //Throws an exception if the move chosen is not part of the valid moves
 		}
 
 		currentPlayerIndex = (currentPlayerIndex + 1) % players.size();    //Increments the player index. Modulus allows counter to loop back to 0(Mr X) after all detectives have moved
 
+		if(currentPlayerIndex == 0){
+			alldetectivesmoved = true;
+		}
+
+		//System.out.println(isGameOver());
+
 
 		if(currentPlayer.colour() == BLACK){							   //The move is accepted, tickets are reduced, location updated
-			System.out.println("test ---- MrX");
+			//System.out.println("test ---- MrX");
 			if(move instanceof DoubleMove){           //If a double move is chosen Mr X accepts his move in a different way (See acceptDoubleMrX)
-				System.out.println("DOUBLE --");
+				//System.out.println("DOUBLE --");
 				currentPlayer.removeTicket(DOUBLE);
 				acceptDoubleMrX(move);
-				System.out.println(currentPlayer.tickets().toString());
-				System.out.println("DOUBLE --");
+				//System.out.println(currentPlayer.tickets().toString());
+				//System.out.println("DOUBLE --");
 
 
-				System.out.println(currentPlayer.tickets().toString());
+				//System.out.println(currentPlayer.tickets().toString());
 
-				System.out.println(currentPlayer.location());
+				//System.out.println(currentPlayer.location());
 				currentPlayer.location(((DoubleMove) move).finalDestination());
-				System.out.println(currentPlayer.location());
+//				System.out.println(currentPlayer.location());
 			}else {
 				Move m;
 				if(!getRounds().get(currentRound)){
@@ -156,7 +162,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 						m = new PassMove(BLACK);
 					}else{
 						//---------------------------------------------------------------------------------
-						System.out.println("test mrXaccept ---" + move.toString());
+//						System.out.println("test mrXaccept ---" + move.toString());
 						m = move;
 					}
 				}else{
@@ -170,9 +176,9 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 				acceptMrX(m);										   //Otherwise MrX accepts normally
 			}
 		}else{
-			System.out.println("test ---- Detective");
+			//System.out.println("test ---- Detective");
 			if(move instanceof TicketMove) {
-				System.out.println("TicketMove");
+				//System.out.println("TicketMove");
 				currentPlayer.removeTicket(((TicketMove)move).ticket());
 				players.get(0).addTicket(((TicketMove)move).ticket());
 				currentPlayer.location(((TicketMove) move).destination());
@@ -185,15 +191,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		}
 
 
-		System.out.println("test accept currIndex ----" + currentPlayerIndex);
+		//System.out.println("test accept currIndex ----" + currentPlayerIndex);
 
-		System.out.println("test endRoundLocation ---" + currentPlayer.location());
-		System.out.println("MrX end of round location" + players.get(0).location());
+//		System.out.println("test endRoundLocation ---" + currentPlayer.location());
+//		System.out.println("MrX end of round location" + players.get(0).location());
 
-		Boolean over = isGameOver();
-		System.out.println(over);
-
-
+//		System.out.println(isGameOver());
 		if(isGameOver()){
 			Set<Colour> winning = getWinningPlayers();
 			for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
@@ -203,7 +206,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			if(currentPlayerIndex != 0){									  //If the current player is not the last detective, "doMove" is called on the next detective
 				doMove();
 			}else {
-				alldetectivesmoved = true;
 				if(isGameOver()){
 					Set<Colour> winning = getWinningPlayers();
 					for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
@@ -229,13 +231,13 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	}
 
 	public void doMove(){
-		System.out.println("test currIndex ----" + currentPlayerIndex);
+		//System.out.println("test currIndex ----" + currentPlayerIndex);
 		ScotlandYardPlayer player = players.get(currentPlayerIndex);
 		player.player().makeMove(this, player.location(), validMoves(player), requireNonNull(this));    //makeMove is called on the current player in the round. This will cause the accept callback to be called
 	}
 
 	public void acceptMrX(Move move){
-		System.out.println("test currRound ----" + currentRound);
+//		System.out.println("test currRound ----" + currentRound);
 		currentRound += 1;												  //The currentRound variable is incremented to show that MrX had made a move
 
 		for(Spectator s : spectators){									  //All spectators will be notified of the round starting and onMoveMade will be called for each one
@@ -246,46 +248,57 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	public void acceptDoubleMrX(Move move){
 		Move m;
-		System.out.println(currentRound);
-		System.out.println(getRounds().toString());
-		System.out.println("CurrRounds" + currentRound);
+		int Loc = 7;																		//7 for testing purposes. This will always be changed
+//		System.out.println(currentRound);
+//		System.out.println(getRounds().toString());
+//		System.out.println("CurrRounds" + currentRound);
 		if(!(getRounds().get(currentRound)) && !(getRounds().get(currentRound + 1))){
-			System.out.println("double no first");
+//			System.out.println("double no first");
 			m = new DoubleMove(BLACK, ((DoubleMove) move).firstMove().ticket() ,mrXLastLocation, ((DoubleMove) move).secondMove().ticket(),mrXLastLocation);
+			Loc = mrXLastLocation;
 		}else{
 			if(getRounds().get(currentRound)){
-				System.out.println("double currRound");
-				mrXLastLocation = ((DoubleMove) move).firstMove().destination();
+//				System.out.println("double currRound");
+				Loc = ((DoubleMove) move).firstMove().destination();
 				if(getRounds().get(currentRound + 1)) {
-					m = new DoubleMove(BLACK, ((DoubleMove) move).firstMove().ticket(), mrXLastLocation, ((DoubleMove) move).secondMove().ticket(), ((DoubleMove) move).secondMove().destination());
-					mrXLastLocation = ((DoubleMove) move).secondMove().destination();
+					m = new DoubleMove(BLACK, ((DoubleMove) move).firstMove().ticket(), Loc, ((DoubleMove) move).secondMove().ticket(), ((DoubleMove) move).secondMove().destination());
+					Loc = ((DoubleMove) move).secondMove().destination();
 				}else{
-					m = new DoubleMove(BLACK, ((DoubleMove) move).firstMove().ticket(), mrXLastLocation, ((DoubleMove) move).secondMove().ticket(), mrXLastLocation);
+					m = new DoubleMove(BLACK, ((DoubleMove) move).firstMove().ticket(), Loc, ((DoubleMove) move).secondMove().ticket(), Loc);
 				}
 			}else{
-				System.out.println("double currRound + 1");
-				m = new DoubleMove(BLACK, ((DoubleMove) move).firstMove().ticket() ,mrXLastLocation, ((DoubleMove) move).secondMove().ticket(), ((DoubleMove) move).secondMove().destination());
-				mrXLastLocation = ((DoubleMove) move).secondMove().destination();
+//				System.out.println("double currRound + 1");
+				m = new DoubleMove(BLACK, ((DoubleMove) move).firstMove().ticket() , mrXLastLocation, ((DoubleMove) move).secondMove().ticket(), ((DoubleMove) move).secondMove().destination());
+				Loc = ((DoubleMove) move).secondMove().destination();
 			}
 		}
 
+//		System.out.println("LOC-----------" + Loc);
 
 		for(Spectator s : spectators){									  //onRoundStarted does not need to be called at first when Mr X uses a double move
 			s.onMoveMade(this, m);
 		}
 
+		if(getRounds().get(currentRound)){
+			mrXLastLocation = Loc;
+		}
 
 		players.get(0).removeTicket(((DoubleMove) move).firstMove().ticket());
 		acceptMrX(((DoubleMove) m).firstMove());
+
+		if(getRounds().get(currentRound)){
+			mrXLastLocation = Loc;
+		}
+
+
+
 		players.get(0).removeTicket(((DoubleMove) move).secondMove().ticket());
 		acceptMrX(((DoubleMove) m).secondMove());
-		//currentRound += 1;                                                //currentRound is again incremented to show that Mr X has moved
-
 	}
 
 
 	public void acceptDetective(Move move){
-		System.out.println("accept Detective");
+//		System.out.println("accept Detective");
 		for(Spectator s : spectators){
 			s.onMoveMade(this, move);								  //onMoveMade is called for each spectator
 		}
@@ -420,7 +433,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 //			System.out.println("new");
 //			System.out.println(x.toString());
 //		}
-		System.out.println(winner.toString());
+		//System.out.println(winner.toString());
 		return Collections.unmodifiableSet(winner);
 
 	}
@@ -428,7 +441,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	@Override
 	public Optional<Integer> getPlayerLocation(Colour colour) {
 		if(colour == BLACK){
-			System.out.println("getPlayerLocation" + mrXLastLocation);
+//			System.out.println("getPlayerLocation" + mrXLastLocation);
 			return Optional.of(mrXLastLocation);
 		}
 		for(ScotlandYardPlayer player : players){
@@ -474,43 +487,43 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			}
 
 		}
-		System.out.println("DCM" + alldetectivesstuck);
+		//System.out.println("DCM" + alldetectivesstuck);
 		return alldetectivesstuck;
 	}
 
 
 
 	private boolean mrXCantMove(){
-		System.out.print("mrXCM");
+		//System.out.print("mrXCM");
 		if(mrXValidMoves(players.get(0)).isEmpty() && alldetectivesmoved){
 			return true;
 		}
-		System.out.println(false);
+		//System.out.println(false);
 		return false;
 	}
 
 
 
 	private boolean mrXCaptured(){
-		System.out.print("mrXCAPTURED ");
+		//System.out.print("mrXCAPTURED ");
 		ScotlandYardPlayer mrX = players.get(0);
 		for (ScotlandYardPlayer x : nonmrxdetectives){
 			if(x.location() == mrX.location()){
 				return true;
 			}
 		}
-		System.out.println(false);
+		//System.out.println(false);
 		return false;
 	}
 
 
 	private boolean noRoundsLeft() {
-		System.out.print("NRL ");
+		//System.out.print("NRL ");
 		if ((getCurrentRound() >= rounds.size()) && alldetectivesmoved) {
-			System.out.println(true);
+			//System.out.println(true);
 			return true;
 		}
-		System.out.println(false);
+		//System.out.println(false);
 		return false;
 	}
 
