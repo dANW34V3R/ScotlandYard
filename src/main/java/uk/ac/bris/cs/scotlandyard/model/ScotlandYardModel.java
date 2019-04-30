@@ -194,22 +194,21 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		System.out.println(over);
 
 
-		if(currentPlayerIndex != 0){									  //If the current player is not the last detective, "doMove" is called on the next detective
+		if(isGameOver()){
+			Set<Colour> winning = getWinningPlayers();
+			for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
+				s.onGameOver(this,winning);
+			}
+		}else{
+			if(currentPlayerIndex != 0){									  //If the current player is not the last detective, "doMove" is called on the next detective
 				doMove();
-		}else {
-			if(!isGameOver()){
+			}else {
 				alldetectivesmoved = true;
 				for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
 					s.onRotationComplete(this);
 				}
-			}else{
-				Set<Colour> winning = getWinningPlayers();
-				for (Spectator s : spectators) {                                  //Otherwise all of the spectators are notified of the rotation being completed
-					s.onGameOver(this,winning);
-				}
 			}
 		}
-
 	}
 
 	@Override
