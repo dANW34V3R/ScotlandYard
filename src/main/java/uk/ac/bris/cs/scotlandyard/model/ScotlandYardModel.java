@@ -267,20 +267,20 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	}
 
 	// returns all valid Moves Detectives can make
-	private Set<Move> detectiveValidMoves(ScotlandYardPlayer current) {
+	private Set<Move> detectiveValidMoves(ScotlandYardPlayer detective) {
 		Set<Move> validmoves = new HashSet<>();
-		for (Edge<Integer, Transport> edge : graph.getEdgesFrom(graph.getNode(current.location()))) { // looping through the list of the different egdes of the node
+		for (Edge<Integer, Transport> edge : graph.getEdgesFrom(graph.getNode(detective.location()))) { // looping through the list of the different egdes of the node
 			Integer nextLocation = edge.destination().value();
 			Ticket t1 = fromTransport(edge.data()); //fromTransport finds the ticket for a given transport type
-			TicketMove firstMove = new TicketMove(current.colour(), t1, nextLocation);
+			TicketMove move1 = new TicketMove(detective.colour(), t1, nextLocation);
 			if (isLocationEmpty(nextLocation) || players.get(0).location() == nextLocation) {
-				if (current.hasTickets(t1)) {
-					validmoves.add(firstMove); //if the current player has the ticket t1, then this is a valid move and is then added to the Set of valid moves
+				if (detective.hasTickets(t1)) {
+					validmoves.add(move1); //if the current player has the ticket t1, then this is a valid move and is then added to the Set of valid moves
 				}
 			}
 		}
 		if (validmoves.isEmpty()) {
-			validmoves.add(new PassMove(current.colour())); //if the set, validmoves, is empty then there are no valid moves hence Pass move
+			validmoves.add(new PassMove(detective.colour())); //if the set, validmoves, is empty then there are no valid moves hence Pass move
 		}
 
 		return Collections.unmodifiableSet(validmoves);
@@ -293,14 +293,14 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 			Integer nextLocation = x.destination().value();
 			Ticket t1 = fromTransport(x.data());
-			TicketMove firstMove = new TicketMove(BLACK, t1, nextLocation);
-			TicketMove firstMoveSecret = new TicketMove(BLACK, SECRET, nextLocation);
+			TicketMove move1 = new TicketMove(BLACK, t1, nextLocation);
+			TicketMove secretMove1 = new TicketMove(BLACK, SECRET, nextLocation);
 			if (isLocationEmpty(nextLocation)) {
 				if (X.hasTickets(t1)) {
-					validmoves.add(firstMove);
+					validmoves.add(move1);
 				}
 				if (X.hasTickets(SECRET)) {
-					validmoves.add(firstMoveSecret);
+					validmoves.add(secretMove1);
 				}
 			}
 
@@ -309,26 +309,26 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			for (Edge<Integer, Transport> x2 : graph.getEdgesFrom(graph.getNode(nextLocation))) { //getting the edges from nextlocation after making first move
 				Integer nextLocationDouble = x2.destination().value();
 				Ticket t2 = fromTransport(x2.data());
-				TicketMove secondMove = new TicketMove(X.colour(), t2, nextLocationDouble);
-				TicketMove secondMoveSecret = new TicketMove(X.colour(), SECRET, nextLocationDouble);
+				TicketMove move2 = new TicketMove(X.colour(), t2, nextLocationDouble);
+				TicketMove secretMove2 = new TicketMove(X.colour(), SECRET, nextLocationDouble);
 				if (isLocationEmpty(nextLocationDouble) && isLocationEmpty(nextLocation) && (X.hasTickets(DOUBLE)) && (getCurrentRound() < (rounds.size() - 1))) {
 					if (t2.equals(t1)) {
 						if (X.tickets().get(t2) >= 2)
-							validmoves.add(new DoubleMove(BLACK, firstMove, secondMove));
+							validmoves.add(new DoubleMove(BLACK, move1, move2));
 					}
 					else if (X.hasTickets(t2) && X.hasTickets(t1)) {
-						validmoves.add(new DoubleMove(BLACK, firstMove, secondMove));
+						validmoves.add(new DoubleMove(BLACK, move1, move2));
 					}
 					if (X.hasTickets(SECRET)) {
 						if (X.hasTickets(t2)) {
-							validmoves.add(new DoubleMove(BLACK, firstMoveSecret, secondMove));
+							validmoves.add(new DoubleMove(BLACK, secretMove1, move2));
 						}
 						if (X.hasTickets(t1)) {
-							validmoves.add(new DoubleMove(BLACK, firstMove, secondMoveSecret));
+							validmoves.add(new DoubleMove(BLACK, move1, secretMove2));
 						}
 					}
 					if (X.tickets().get(SECRET) >= 2)
-						validmoves.add(new DoubleMove(BLACK, firstMoveSecret, secondMoveSecret));
+						validmoves.add(new DoubleMove(BLACK, secretMove1, secretMove2));
 				}
 			}
 		}
@@ -469,3 +469,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		return new ImmutableGraph<>(graph);
 	}
 }
+
+
+
