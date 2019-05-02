@@ -131,7 +131,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 
 		if(currentPlayer.colour() == BLACK){							   //The move is accepted, tickets are reduced, location updated
-			if(move instanceof DoubleMove){           //If a double move is chosen Mr X accepts his move in a different way (See acceptDoubleMrX)
+			if(move instanceof DoubleMove){                                //If a double move is chosen Mr X accepts his move in a different way (See acceptDoubleMrX)
 				currentPlayer.removeTicket(DOUBLE);
 				acceptDoubleMrX(move);
 				currentPlayer.location(((DoubleMove) move).finalDestination());
@@ -271,16 +271,16 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		Set<Move> validmoves = new HashSet<>();
 		for (Edge<Integer, Transport> edge : graph.getEdgesFrom(graph.getNode(detective.location()))) { // looping through the list of the different egdes of the node
 			Integer nextLocation = edge.destination().value();
-			Ticket t1 = fromTransport(edge.data()); //fromTransport finds the ticket for a given transport type
-			TicketMove move1 = new TicketMove(detective.colour(), t1, nextLocation);
+			Ticket t1 = fromTransport(edge.data());                                                     //fromTransport finds the ticket for a given transport type
+			TicketMove move1 = new TicketMove(detective.colour(), t1, nextLocation);                    //creates a move
 			if (isLocationEmpty(nextLocation) || players.get(0).location() == nextLocation) {
 				if (detective.hasTickets(t1)) {
-					validmoves.add(move1); //if the current player has the ticket t1, then this is a valid move and is then added to the Set of valid moves
+					validmoves.add(move1);                                                              //if the current player has the ticket t1, then this is a valid move and is then added to the Set of valid moves
 				}
 			}
 		}
 		if (validmoves.isEmpty()) {
-			validmoves.add(new PassMove(detective.colour())); //if the set, validmoves, is empty then there are no valid moves hence Pass move
+			validmoves.add(new PassMove(detective.colour()));                                           //if the set, validmoves, is empty then there are no valid moves hence Pass move
 		}
 
 		return Collections.unmodifiableSet(validmoves);
@@ -304,7 +304,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 				}
 			}
 
-			// generates available Double Moves
+			// generates available Double Moves for mrX
 
 			for (Edge<Integer, Transport> x2 : graph.getEdgesFrom(graph.getNode(nextLocation))) { //getting the edges from nextlocation after making first move
 				Integer nextLocationDouble = x2.destination().value();
@@ -391,7 +391,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public Optional<Integer> getPlayerTickets(Colour colour, Ticket ticket) {
-		for(ScotlandYardPlayer player : players){    //loops through players and if the colour is the same as the colour inputted then it gets the amount of the ticket inputted.
+		for(ScotlandYardPlayer player : players){                                        //loops through players and if the colour is the same as the colour inputted then it gets the amount of the ticket inputted.
 			if(player.colour() == colour){
 				return Optional.of(player.tickets().get(ticket));
 			}
@@ -469,6 +469,3 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		return new ImmutableGraph<>(graph);
 	}
 }
-
-
-
