@@ -19,10 +19,9 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	List<ScotlandYardPlayer> players;
 	private int currentPlayerIndex = 0;
 	private int currentRound = 0;
-	private int rotation = 0;
-	int mrXLastLocation = 0;
-	List<Spectator> spectators = new ArrayList<>();
-	List<ScotlandYardPlayer> nonmrxdetectives;
+	private int mrXLastLocation = 0;
+	private List<Spectator> spectators = new ArrayList<>();
+	private List<ScotlandYardPlayer> nonmrxdetectives;
 	private boolean alldetectivesmoved = false;
 
 
@@ -118,7 +117,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			throw new NullPointerException("Move cannot be null");
 		}
 
-
 		ScotlandYardPlayer currentPlayer = players.get(currentPlayerIndex);
 
 		if (!(validMoves(currentPlayer).contains(move))){
@@ -132,16 +130,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		}
 
 
-
 		if(currentPlayer.colour() == BLACK){							   //The move is accepted, tickets are reduced, location updated
 			if(move instanceof DoubleMove){           //If a double move is chosen Mr X accepts his move in a different way (See acceptDoubleMrX)
 				currentPlayer.removeTicket(DOUBLE);
 				acceptDoubleMrX(move);
-
-
 				currentPlayer.location(((DoubleMove) move).finalDestination());
-
-			}else {
+			}else{
 				Move m;
 				if(!getRounds().get(currentRound)){
 					if(move instanceof TicketMove) {
@@ -149,15 +143,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 					}else if(move instanceof PassMove){
 						m = new PassMove(BLACK);
 					}else{
-
 						m = move;
 					}
 				}else{
 					mrXLastLocation = ((TicketMove) move).destination();
 					m = move;
 				}
-
-
 				currentPlayer.removeTicket(((TicketMove) move).ticket());
 				currentPlayer.location(((TicketMove) move).destination());
 				acceptMrX(m);										   //Otherwise MrX accepts normally
@@ -171,7 +162,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			}else{
 				acceptDetective(new PassMove(move.colour()));										  //If the player is not Mr X they will accept the move as a detective
 			}
-
 
 		}
 
@@ -245,7 +235,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			}
 		}
 
-
 		for(Spectator s : spectators){									  //onRoundStarted does not need to be called at first when Mr X uses a double move
 			s.onMoveMade(this, m);
 		}
@@ -261,12 +250,9 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			mrXLastLocation = Loc;
 		}
 
-
-
 		players.get(0).removeTicket(((DoubleMove) move).secondMove().ticket());
 		acceptMrX(((DoubleMove) m).secondMove());
 	}
-
 
 	public void acceptDetective(Move move){
 		for(Spectator s : spectators){
@@ -279,7 +265,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		if (x.colour() == BLACK) return mrXValidMoves(x);
 		else return detectiveValidMoves(x);
 	}
-
 
 	// returns all valid Moves Detectives can make
 	private Set<Move> detectiveValidMoves(ScotlandYardPlayer current) {
@@ -299,10 +284,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		}
 
 		return Collections.unmodifiableSet(validmoves);
-
-
 	}
-
 
 	// returns all valid Moves MrX can make
 	private Set<Move> mrXValidMoves(ScotlandYardPlayer X) {
@@ -321,9 +303,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 					validmoves.add(firstMoveSecret);
 				}
 			}
-
-
-
 
 			// generates available Double Moves
 
@@ -355,7 +334,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		}
 
 		return Collections.unmodifiableSet(validmoves);
-
 	}
 
 	private boolean isLocationEmpty(Integer location) {
@@ -366,7 +344,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		}
 		return true;
 	}
-
 
 	@Override
 	public Collection<Spectator> getSpectators() {
@@ -386,7 +363,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	public Set<Colour> getWinningPlayers() {
 		Set<Colour> winner = new HashSet<>();
 
-
 		if (noRoundsLeft() || detectivesCantMove()){
 			winner.add(BLACK);
 		}
@@ -398,7 +374,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 		}
 		return Collections.unmodifiableSet(winner);
-
 	}
 
 	@Override
@@ -432,9 +407,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		}
 
 		return false;
-
 	}
-
 
 	private boolean detectivesCantMove(){
 		boolean alldetectivesstuck = true;
@@ -452,16 +425,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		return alldetectivesstuck;
 	}
 
-
-
 	private boolean mrXCantMove(){
 		if(mrXValidMoves(players.get(0)).isEmpty() && alldetectivesmoved){
 			return true;
 		}
 		return false;
 	}
-
-
 
 	private boolean mrXCaptured(){
 		ScotlandYardPlayer mrX = players.get(0);
@@ -473,18 +442,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		return false;
 	}
 
-
 	private boolean noRoundsLeft() {
-		//System.out.print("NRL ");
 		if ((getCurrentRound() >= rounds.size()) && alldetectivesmoved) {
 			return true;
 		}
 		return false;
 	}
-
-
-
-
 
 	@Override
 	public Colour getCurrentPlayer() {
@@ -496,7 +459,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		return currentRound;
 	}
 
-
 	@Override
 	public List<Boolean> getRounds() {
 		return Collections.unmodifiableList(rounds);
@@ -506,6 +468,4 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	public Graph<Integer, Transport> getGraph() {
 		return new ImmutableGraph<>(graph);
 	}
-
-
 }
